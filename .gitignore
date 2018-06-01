@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 # Created by .ignore support plugin (hsz.mobi)
 ### Python template
+=======
+>>>>>>> d224477fbfd2ba5bb75c9c89f3e7c638f7ee72f2
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -10,7 +13,10 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+<<<<<<< HEAD
 env/
+=======
+>>>>>>> d224477fbfd2ba5bb75c9c89f3e7c638f7ee72f2
 build/
 develop-eggs/
 dist/
@@ -26,6 +32,10 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+<<<<<<< HEAD
+=======
+MANIFEST
+>>>>>>> d224477fbfd2ba5bb75c9c89f3e7c638f7ee72f2
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -45,8 +55,14 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+<<<<<<< HEAD
 *,cover
 .hypothesis/
+=======
+*.cover
+.hypothesis/
+.pytest_cache/
+>>>>>>> d224477fbfd2ba5bb75c9c89f3e7c638f7ee72f2
 
 # Translations
 *.mo
@@ -55,6 +71,10 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+<<<<<<< HEAD
+=======
+db.sqlite3
+>>>>>>> d224477fbfd2ba5bb75c9c89f3e7c638f7ee72f2
 
 # Flask stuff:
 instance/
@@ -81,6 +101,7 @@ celerybeat-schedule
 # SageMath parsed files
 *.sage.py
 
+<<<<<<< HEAD
 # dotenv
 .env
 
@@ -91,10 +112,32 @@ ENV/
 
 # Spyder project settings
 .spyderproject
+=======
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+>>>>>>> d224477fbfd2ba5bb75c9c89f3e7c638f7ee72f2
 
 # Rope project settings
 .ropeproject
 
+<<<<<<< HEAD
 # IDE shit
 .idea/
 
+=======
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+>>>>>>> d224477fbfd2ba5bb75c9c89f3e7c638f7ee72f2
