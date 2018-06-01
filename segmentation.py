@@ -1,5 +1,17 @@
 import cv2
+import numpy as np
 
+
+def debug(value, name=None):
+    if isinstance(value, np.ndarray):
+        name = 'ndarray' if name is None else name
+
+        print("{}: {}".format(name, value))
+        print("{} shape: {}".format(name, value.shape))
+    else:
+        name = 'value' if name is None else name
+
+        print("{}: {}".format(name, value))
 
 def read_image(file_path):
     """
@@ -12,7 +24,7 @@ def read_image(file_path):
         np.ndarray of the read image or None if couldn't read
     """
     # read image file in grayscale
-    image = cv2.imread(file_path, 0)
+    image = cv2.imread(file_path,  cv2.IMREAD_GRAYSCALE)
 
     return image
 
@@ -30,31 +42,42 @@ def get_marker(image):
 
     return ret_val, image_marker
 
-def apply_marker(image, marker):
+def apply_marker(image, marker, background = 0):
     """
     Apply marker on original image
     Args:
         image: original image to be masked
         marker: one hot encoded with 0 and 255
+        background: grayscale value that will be set for background
 
     Returns:
         new_image that is masked with marker
     """
 
-    mask = marker.copy()
-    mask[marker == 255] = 1
+    # change marker to boolean index
+    mask = marker.astype(bool)
 
     new_image = image.copy()
-    new_image[mask] = 0
+    new_image[mask] = background
 
     return new_image
 
-def segment(image_file):
+def segment(image_file, background = 0):
+    """
+    Segment an image file using otsu thresholding
+    Args:
+        image_file: file path
+        background: grayscale value to be set as background
+
+    Returns:
+        ret_val:
+        segmented_image: in ndarray form
+    """
     image = read_image(image_file)
     if image is None:
         print('Error: Couldnot read image file: ', image_file)
     else:
         ret_val, marker = get_marker(image)
-        segmented_image = apply_marker(image, marker)
+        segmented_image = apply_marker(image, marker, background)
 
         return ret_val, segmented_image

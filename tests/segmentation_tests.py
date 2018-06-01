@@ -22,6 +22,13 @@ class TestSegmentationUtils(unittest.TestCase):
         image = seg.read_image(files['txt'])
         self.assertEqual(image, None)
 
+    def test_applying_marker(self):
+        # fake ndarrays to mimic image and marker
+        image = np.array([[1, 2, 3], [4, 5, 6]])
+        marker = np.array([[0, 0, 255], [255, 0, 0]])
+
+        new_image = seg.apply_marker(image, marker)
+        np.testing.assert_array_equal(new_image, np.array([[1, 2, 0], [0, 5, 6]]))
 
 if __name__ == '__main__':
     unittest.main()
