@@ -50,13 +50,15 @@ def get_marker(image):
 
     return ret_val, image_marker
 
-def apply_marker(image, marker, background = 0):
+def apply_marker(image, marker, background = 0, inverse = True):
     """
     Apply marker on original image
     Args:
         image: original image to be masked
         marker: one hot encoded with 0 and 255
         background: grayscale value that will be set for background
+        inverse: if boolean should be inversed to avoid giving background as
+                 output rather than the leaf parts
 
     Returns:
         new_image that is masked with marker
@@ -65,6 +67,13 @@ def apply_marker(image, marker, background = 0):
     # change marker to boolean index
     # mask = np.logical_not(marker.astype(bool))
     mask = marker.astype(bool)
+    unique, counts = np.unique(mask, return_counts=True)
+    unique_counts = dict(zip(unique, counts))
+    # needs enhancment here, if difference is not much inverse
+    # so that it will not segment the background rather than the leaf
+    # 2000000 number should be enchanced(found empirically, with 8 images, bad)
+    if inverse and unique_counts[True] - unique_counts[False] < 2000000:
+        mask = np.logical_not(mask)
 
     new_image = image.copy()
     new_image[mask] = background
