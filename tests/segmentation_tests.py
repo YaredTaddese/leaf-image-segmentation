@@ -19,8 +19,9 @@ class TestSegmentationUtils(unittest.TestCase):
         self.assertEqual(type(image), np.ndarray)
 
     def test_cannot_read_txt_file(self):
-        image = seg.read_image(files['txt'])
-        self.assertEqual(image, None)
+        with self.assertRaises(ValueError) as context:
+            image = seg.read_image(files['txt'])
+        self.assertEqual(seg.IMAGE_NOT_READ, str(context.exception))
 
     def test_applying_marker(self):
         # fake ndarrays to mimic image and marker

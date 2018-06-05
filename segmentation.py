@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+# error message when image could not be read
+IMAGE_NOT_READ = 'IMAGE_NOT_READ'
 
 def debug(value, name=None):
     if isinstance(value, np.ndarray):
@@ -22,11 +24,17 @@ def read_image(file_path):
 
     Returns:
         np.ndarray of the read image or None if couldn't read
+    
+    Raises:
+        ValueError if image could not be read with message IMAGE_NOT_READ
     """
     # read image file in grayscale
     image = cv2.imread(file_path,  cv2.IMREAD_GRAYSCALE)
 
-    return image
+    if image is None:
+        raise ValueError(IMAGE_NOT_READ)
+    else:
+        return image
 
 def get_marker(image):
     """
@@ -55,6 +63,7 @@ def apply_marker(image, marker, background = 0):
     """
 
     # change marker to boolean index
+    # mask = np.logical_not(marker.astype(bool))
     mask = marker.astype(bool)
 
     new_image = image.copy()
@@ -74,10 +83,8 @@ def segment(image_file, background = 0):
         segmented_image: in ndarray form
     """
     image = read_image(image_file)
-    if image is None:
-        print('Error: Couldnot read image file: ', image_file)
-    else:
-        ret_val, marker = get_marker(image)
-        segmented_image = apply_marker(image, marker, background)
+    
+    ret_val, marker = get_marker(image)
+    segmented_image = apply_marker(image, marker, background)
 
-        return ret_val, segmented_image
+    return ret_val, segmented_image
