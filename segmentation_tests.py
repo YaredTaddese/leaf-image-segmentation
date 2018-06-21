@@ -1,16 +1,12 @@
 import unittest
-import sys
-import os
 import numpy as np
 
-# include parent directory to get modules in there
-sys.path.insert(0, os.path.pardir)
-
-from image_segmentation import segmentation as seg
+import otsu_segmentation as seg
+import background_marker as bgm
 
 files = {
-    "jpg": "tests/testing_files/jpg.jpg",
-    "txt": "tests/testing_files/txt.txt",
+    "jpg": "testing_files/jpg.jpg",
+    "txt": "testing_files/txt.txt",
 }
 
 class TestSegmentationUtils(unittest.TestCase):
@@ -38,6 +34,33 @@ class TestSegmentationUtils(unittest.TestCase):
 
         new_image = seg.apply_marker(image, marker, background=0)
         np.testing.assert_array_equal(new_image, np.array([[0, 0, 3], [4, 0, 0]]))
+
+    def test_remove_whites(self):
+        # fake ndarrays to mimic image and marker
+        image = np.array([
+            [[200, 220, 200], [201, 221, 201], [100, 120, 100]],
+            [[200, 120, 200], [201, 220, 201], [200, 221, 200]],
+        ])
+        marker = np.array([
+            [True, True, True], [True, True, True]
+        ])
+
+        bgm.remove_whites(image, marker)
+        np.testing.assert_array_equal(marker, np.array([ [True, False, True], [True, True, True] ]))
+
+
+    def test_remove_blacks(self):
+        # fake ndarrays to mimic image and marker
+        image = np.array([
+            [[30, 30, 30], [31, 31, 31], [29, 29, 29]],
+            [[29, 29, 31], [29, 31, 31], [200, 221, 200]],
+        ])
+        marker = np.array([
+            [True, True, True], [True, True, True]
+        ])
+
+        bgm.remove_blacks(image, marker)
+        np.testing.assert_array_equal(marker, np.array([ [True, True, False], [True, True, True] ]))
 
 if __name__ == '__main__':
     unittest.main()

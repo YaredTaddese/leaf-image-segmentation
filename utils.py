@@ -32,6 +32,22 @@ def read_image(file_path, read_mode=cv2.IMREAD_COLOR):
         return image
 
 
+def ensure_color(image):
+    """
+    Ensure that an image is colored
+    Args:
+        image: image to be checked for
+
+    Returns:
+        nothing
+
+    Raises:
+        ValueError with message code if image is not colored
+    """
+    if len(image.shape) < 3:
+        raise ValueError(NOT_COLOR_IMAGE)
+
+
 def excess_green(image, scale = 2):
     """
     Compute excess green index for colored image
@@ -44,8 +60,7 @@ def excess_green(image, scale = 2):
         new image with excess green
     """
 
-    if len(image.shape) < 3:
-        raise ValueError(NOT_COLOR_IMAGE)
+    ensure_color(image)
 
     new_image = image.copy()
     new_image[:, :, 1] = scale * image[:, :, 1]
@@ -53,7 +68,7 @@ def excess_green(image, scale = 2):
     return new_image
 
 
-def excess_red(image, scale=1.2):
+def excess_red(image, scale=1.4):
     """
     Compute excess red index for colored image
 
@@ -65,8 +80,7 @@ def excess_red(image, scale=1.2):
         new image with excess red
     """
 
-    if len(image.shape) < 3:
-        raise ValueError(NOT_COLOR_IMAGE)
+    ensure_color(image)
 
     new_image = image.copy()
     new_image[:, :, 2] = scale * image[:, :, 2]
@@ -83,5 +97,6 @@ def debug(value, name=None):
     else:
         name = 'value' if name is None else name
 
+        print("{} type: {}".format(name, type(value)))
         print("{}: {}".format(name, value))
 
