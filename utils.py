@@ -62,10 +62,15 @@ def excess_green(image, scale = 2):
 
     ensure_color(image)
 
-    new_image = image.copy()
-    new_image[:, :, 1] = scale * image[:, :, 1]
+    bgr_sum = np.sum(image, axis=2)
 
-    return new_image
+    blues = image[:, :, 0] / bgr_sum
+    greens = image[:, :, 1] / bgr_sum
+    reds = image[:, :, 2] / bgr_sum
+
+    index = scale * greens - (reds + blues)
+
+    return index
 
 
 def excess_red(image, scale=1.4):
@@ -82,10 +87,15 @@ def excess_red(image, scale=1.4):
 
     ensure_color(image)
 
-    new_image = image.copy()
-    new_image[:, :, 2] = scale * image[:, :, 2]
+    bgr_sum = np.sum(image, axis=2)
 
-    return new_image
+    blues = image[:, :, 0] / bgr_sum
+    greens = image[:, :, 1] / bgr_sum
+    reds = image[:, :, 2] / bgr_sum
+
+    index = scale * reds - greens
+
+    return index
 
 
 def debug(value, name=None):

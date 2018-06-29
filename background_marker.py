@@ -19,7 +19,7 @@ def remove_whites(image, marker):
     # setup the white remover to process logical_and in place
     white_remover = np.full((image.shape[0], image.shape[1]), True)
 
-    # below line same as: white_remover = np.logical_and(white_remover,  image[:, :, 0] > 220)
+    # below line same as: white_remover = np.logical_and(white_remover,  image[:, :, 0] > 200)
     white_remover[image[:, :, 0] <= 200] = False # blue channel
 
     # below line same as: white_remover = np.logical_and(white_remover,  image[:, :, 1] > 220)
@@ -42,8 +42,11 @@ def remove_blacks(image, marker):
     Returns:
         nothing
     """
-    # generate the black remover
-    black_remover = image[:, :, 0] < 30 # blue channel
+    # setup the black remover to process logical_and in place
+    black_remover = np.full((image.shape[0], image.shape[1]), True)
+
+    # below line same as: black_remover = np.logical_and(black_remover,  image[:, :, 0] < 30)
+    black_remover[image[:, :, 0] >= 30] = False  # blue channel
 
     # below line same as: black_remover = np.logical_and(black_remover,  image[:, :, 1] < 30)
     black_remover[image[:, :, 1] >= 30] = False  # green channel
@@ -55,20 +58,42 @@ def remove_blacks(image, marker):
     marker[black_remover] = False
 
 
-def diff_otsu(excess_green_image, excess_red_image):
+def remove_blues(image, marker):
+    """
+    Remove pixels resembling blues better than green from marker as background
+    Args:
+        image:
+        marker: to be overloaded with blue pixels to be removed
 
-    return cv2.threshold(excess_green_image - excess_red_image, 0, 255,cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    Returns:
+        nothing
+    """
+    # choose pixels that have higher blue than green
+    blue_remover = image[:, :, 0] > image[:, :, 1]
+
+    # remove blacks from marker
+    marker[blue_remover] = False
+
+
+def index_marker(excess_green, excess_red, marker):
+    marker[(excess_green - excess_red) <= 0] = False
+
+
+def otsu_index(excess_green, excess_red):
+
+    return cv2.threshold(excess_green - excess_red, 0, 255,cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
 
 def generate_background_marker(file_name):
     image = read_image(file_name)
 
     marker = np.full([image.shape[0], image.shape[1]], True)
 
-    excess_green_image = excess_green(image)
-    excess_red_image = excess_red(image)
+    index = excess_green(image) - excess_red(image)
 
     remove_whites(image, marker)
     remove_blacks(image, marker)
+    remove_blues(image, marker)
 
     return 0, marker
 
@@ -80,7 +105,6 @@ def simple_test():
     debug(g_img[0], 'excess_green')
     debug(r_img[0], 'excess_red')
     debug(g_img[0]-r_img[0], 'diff')
-    print(type(image))
 
 
 def test():

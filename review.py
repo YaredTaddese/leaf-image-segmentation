@@ -16,30 +16,43 @@ files = {
 
 from background_marker import *
 
+
+def show(original_image, image, image_title, hist_val=None):
+    if hist_val is None:
+        plot_nums = 2
+    else:
+        plot_nums = 3
+
+    # Original image plot
+    plot_index = 1
+    plt.subplot(plot_nums, 1, plot_index), plt.imshow(original_image, cmap='gray')
+    plt.title('Original Image'), plt.xticks([]), plt.yticks([])
+
+    # Histogram plot
+    if hist_val is not None:
+        plot_index += 1
+        plt.subplot(plot_nums, 1, plot_index), plt.hist(original_image.ravel(), 256)
+        plt.axvline(x=hist_val, color='r', linestyle='dashed', linewidth=2)
+        plt.title(image_title + ' Histogram'), plt.xticks([]), plt.yticks([])
+
+    # Processed image plot
+    plot_index += 1
+    plt.subplot(plot_nums, 1, plot_index), plt.imshow(image, cmap='gray')
+    plt.title(image_title), plt.xticks([]), plt.yticks([])
+
+    plt.show()
+
 def review_marker(file_name):
     try:
         original_image = read_image(file_name)            
         ret_val, marker = get_marker(original_image)
     except ValueError as err:
-        if err.message == IMAGE_NOT_READ:
+        if str(err) == IMAGE_NOT_READ:
             print('Error: Couldnot read image file: ', file_name)  
         else:
             raise
-    else:      
-        # Original image plot
-        plt.subplot(3, 1, 1), plt.imshow(original_image, cmap='gray')
-        plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-
-        # Histogram plot
-        plt.subplot(3, 1, 2), plt.hist(original_image.ravel(), 256)
-        plt.axvline(x=ret_val, color='r', linestyle='dashed', linewidth=2)
-        plt.title('Original Image Histogram'), plt.xticks([]), plt.yticks([])
-
-        # Marker image plot
-        plt.subplot(3, 1, 3), plt.imshow(marker, cmap='gray')
-        plt.title('Otsu thresholding Marker'), plt.xticks([]), plt.yticks([])
-
-        plt.show()
+    else:
+        show(original_image, marker, 'Otsu Thresholding Marker', ret_val)
 
 
 def review_segmentation(file_name):
@@ -47,38 +60,27 @@ def review_segmentation(file_name):
         original_image = read_image(file_name)        
         ret_val, segmented_image = segment(file_name)
     except ValueError as err:
-        if err.message == IMAGE_NOT_READ:
+        if str(err) == IMAGE_NOT_READ:
             print('Error: Couldnot read image file: ', file_name)
         else:
             raise
     else:
-        # Original image plot
-        plt.subplot(3, 1, 1), plt.imshow(original_image, cmap='gray')
-        plt.title('Original Image'), plt.xticks([]), plt.yticks([])
+        show(original_image, segmented_image, 'Otsu Thresholding', ret_val)
 
-        # Histogram plot
-        plt.subplot(3, 1, 2), plt.hist(original_image.ravel(), 256)
-        plt.axvline(x=ret_val, color='r', linestyle='dashed', linewidth=2)
-        plt.title('Histogram'), plt.xticks([]), plt.yticks([])
-
-        # Segmented image plot
-        plt.subplot(3, 1, 3), plt.imshow(segmented_image, cmap='gray')
-        plt.title('Otsu thresholding'), plt.xticks([]), plt.yticks([])
-
-        plt.show()
 
 def review_remove_whites(file_name):
     try:
         original_image = read_image(file_name)
         ret_val = 0
 
-        marker = np.full([original_image.shape[0], original_image.shape[1]], True)
-        marker = remove_whites(original_image, marker)
+        marker = np.full((original_image.shape[0], original_image.shape[1]), True)
+        remove_whites(original_image, marker)
 
         image = original_image.copy()
-        image[np.logical_not(marker)] = [0, 0, 0]
+        debug(image, 'image')
+        debug(marker, 'marker')
+        image[np.logical_not(marker)] = np.array([0, 0, 0])
     except ValueError as err:
-        debug(err, 'err')
         if str(err) == IMAGE_NOT_READ:
             print('Error: Couldnot read image file: ', file_name)
         elif str(err) == NOT_COLOR_IMAGE:
@@ -86,20 +88,138 @@ def review_remove_whites(file_name):
         else:
             raise
     else:
-        # Original image plot
-        plt.subplot(3, 1, 1), plt.imshow(cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB))
-        plt.title('Original Image'), plt.xticks([]), plt.yticks([])
+        show(original_image, image, 'Remove Reds')
 
-        # Histogram plot
-        plt.subplot(3, 1, 2), plt.hist(original_image.ravel(), 256)
-        plt.axvline(x=ret_val, color='r', linestyle='dashed', linewidth=2)
-        plt.title('Histogram'), plt.xticks([]), plt.yticks([])
 
-        # Segmented image plot
-        plt.subplot(3, 1, 3), plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), cmap='gray')
-        plt.title('Remove whites'), plt.xticks([]), plt.yticks([])
+def review_remove_blacks(file_name):
+    try:
+        original_image = read_image(file_name)
+        ret_val = 0
 
-        plt.show()
+        marker = np.full((original_image.shape[0], original_image.shape[1]), True)
+        remove_blacks(original_image, marker)
+
+        image = original_image.copy()
+        image[np.logical_not(marker)] = np.array([255, 255, 255])
+    except ValueError as err:
+        if str(err) == IMAGE_NOT_READ:
+            print('Error: Couldnot read image file: ', file_name)
+        elif str(err) == NOT_COLOR_IMAGE:
+            print('Error: Not color image file: ', file_name)
+        else:
+            raise
+    else:
+        show(original_image, image, 'Remove Blacks')
+
+
+def review_remove_blues(file_name):
+    try:
+        original_image = read_image(file_name)
+        ret_val = 0
+
+        marker = np.full((original_image.shape[0], original_image.shape[1]), True)
+        remove_blues(original_image, marker)
+
+        image = original_image.copy()
+        image[np.logical_not(marker)] = np.array([0, 0, 0])
+    except ValueError as err:
+        if str(err) == IMAGE_NOT_READ:
+            print('Error: Couldnot read image file: ', file_name)
+        elif str(err) == NOT_COLOR_IMAGE:
+            print('Error: Not color image file: ', file_name)
+        else:
+            raise
+    else:
+        show(original_image, image, 'Remove Blues')
+
+
+def review_excess_green(file_name):
+    try:
+        original_image = read_image(file_name)
+        ret_val = 0
+
+        index = excess_green(original_image)
+    except ValueError as err:
+        if str(err) == IMAGE_NOT_READ:
+            print('Error: Couldnot read image file: ', file_name)
+        elif str(err) == NOT_COLOR_IMAGE:
+            print('Error: Not color image file: ', file_name)
+        else:
+            raise
+    else:
+        show(original_image, index, 'Green Index')
+
+
+def review_excess_red(file_name):
+    try:
+        original_image = read_image(file_name)
+        ret_val = 0
+
+        index = excess_red(original_image)
+    except ValueError as err:
+        if str(err) == IMAGE_NOT_READ:
+            print('Error: Couldnot read image file: ', file_name)
+        elif str(err) == NOT_COLOR_IMAGE:
+            print('Error: Not color image file: ', file_name)
+        else:
+            raise
+    else:
+        show(original_image, index, 'Red Index')
+
+
+def review_excess_diff(file_name):
+    try:
+        original_image = read_image(file_name)
+        ret_val = 0
+
+        index = excess_green(original_image) - excess_red(original_image)
+    except ValueError as err:
+        if str(err) == IMAGE_NOT_READ:
+            print('Error: Couldnot read image file: ', file_name)
+        elif str(err) == NOT_COLOR_IMAGE:
+            print('Error: Not color image file: ', file_name)
+        else:
+            raise
+    else:
+        show(original_image, index, 'Excess Diff')
+
+
+def review_index_marker(file_name):
+    try:
+        original_image = read_image(file_name)
+        ret_val = 0
+
+        marker = np.full((original_image.shape[0], original_image.shape[1]), True)
+        index_marker(excess_green(original_image), excess_red(original_image), marker)
+
+        image = original_image.copy()
+        image[np.logical_not(marker)] = np.array([0, 0, 0])
+    except ValueError as err:
+        if str(err) == IMAGE_NOT_READ:
+            print('Error: Couldnot read image file: ', file_name)
+        elif str(err) == NOT_COLOR_IMAGE:
+            print('Error: Not color image file: ', file_name)
+        else:
+            raise
+    else:
+        show(original_image, image, 'Index Marker')
+
+
+def review_otsu_index(file_name):
+    try:
+        original_image = read_image(file_name)
+        ret_val, image = otsu_index(excess_green(original_image), excess_red(original_image))
+
+    except ValueError as err:
+        if str(err) == IMAGE_NOT_READ:
+            print('Error: Couldnot read image file: ', file_name)
+        elif str(err) == NOT_COLOR_IMAGE:
+            print('Error: Not color image file: ', file_name)
+        else:
+            raise
+    else:
+        show(original_image, image, 'Otsu for Index', ret_val)
+
 
 if __name__ == '__main__':
     while True:
@@ -108,4 +228,8 @@ if __name__ == '__main__':
         file_name = files['jpg' + image_num]
         # review_marker(file_name)
         # review_segmentation(file_name)
-        review_remove_whites(file_name)
+        # review_remove_whites(file_name)
+        # review_remove_blacks(file_name)
+        # review_excess_green(file_name)
+        # review_excess_red(file_name)
+        review_index_marker(file_name)
