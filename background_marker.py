@@ -71,16 +71,48 @@ def remove_blues(image, marker):
     # choose pixels that have higher blue than green
     blue_remover = image[:, :, 0] > image[:, :, 1]
 
-    # remove blacks from marker
+    # remove blues from marker
     marker[blue_remover] = False
 
 
-def index_marker(excess_green, excess_red, marker):
-    marker[(excess_green - excess_red) <= 0] = False
+def color_index_marker(excess_green, excess_red, marker):
+    """
+    Differentiate marker based on the difference of the color indexes
+    Threshold below some number(found empirically based on testing on 5 photos,bad)
+    If threshold number is getting less, more non-green image
+     will be included and vice versa
+    Args:
+        excess_green: color index excess green
+        excess_red: color index excess red
+        marker: marker to be updated
+
+    Returns:
+        nothing
+    """
+    diff = excess_green - excess_red
+    debug(diff, 'index diff')
+    marker[diff <= -0.05] = False
 
 
-def otsu_index(excess_green, excess_red):
+def texture_filter(image, marker, threshold=220, window=3):
+    window = window - window//2 - 1
+    for x in range(0, image.shape[0]):
+        for y in range(0, image.shape[1]):
+            # print('x y', x, y)
+            # print('window', image[x:x + window, y:y + window])
+            x_start = x - window if x < window else x
+            y_start = y - window if y < window else y
+            x_stop = x + window if x < image.shape[0] - window else image.shape[0]
+            y_stop = y + window if y < image.shape[1] - window else image.shape[1]
 
+            local_entropy = np.sum(image[x_start:x_stop, y_start:y_stop]
+                                   * np.log(image[x_start:x_stop, y_start:y_stop] + 1e-07))
+            # print('entropy', local_entropy)
+            if local_entropy > threshold:
+                marker[x, y] = False
+
+
+def otsu_color_index(excess_green, excess_red):
     return cv2.threshold(excess_green - excess_red, 0, 255,cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
 
@@ -98,13 +130,17 @@ def generate_background_marker(file_name):
     return 0, marker
 
 def simple_test():
-    image = read_image(files['jpg1'])
-    g_img = excess_green(image)
-    r_img = excess_red(image)
-    debug(image[0], 'image')
-    debug(g_img[0], 'excess_green')
-    debug(r_img[0], 'excess_red')
-    debug(g_img[0]-r_img[0], 'diff')
+    # image = read_image(files['jpg1'])
+    # g_img = excess_green(image)
+    # r_img = excess_red(image)
+    # debug(image[0], 'image')
+    # debug(g_img[0], 'excess_green')
+    # debug(r_img[0], 'excess_red')
+    # debug(g_img[0]-r_img[0], 'diff')
+
+    original_image = read_image(files['jpg1'], cv2.IMREAD_GRAYSCALE)
+    marker = np.full((original_image.shape[0], original_image.shape[1]), True)
+    texture_filter(original_image, marker)
 
 
 def test():

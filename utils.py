@@ -63,6 +63,7 @@ def excess_green(image, scale = 2):
     ensure_color(image)
 
     bgr_sum = np.sum(image, axis=2)
+    debug(bgr_sum, 'green bgr sum')
 
     blues = image[:, :, 0] / bgr_sum
     greens = image[:, :, 1] / bgr_sum
@@ -88,6 +89,7 @@ def excess_red(image, scale=1.4):
     ensure_color(image)
 
     bgr_sum = np.sum(image, axis=2)
+    debug(bgr_sum, 'red bgr sum')
 
     blues = image[:, :, 0] / bgr_sum
     greens = image[:, :, 1] / bgr_sum
