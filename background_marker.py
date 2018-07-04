@@ -75,23 +75,20 @@ def remove_blues(image, marker):
     marker[blue_remover] = False
 
 
-def color_index_marker(excess_green, excess_red, marker):
+def color_index_marker(color_index_diff, marker):
     """
     Differentiate marker based on the difference of the color indexes
     Threshold below some number(found empirically based on testing on 5 photos,bad)
     If threshold number is getting less, more non-green image
      will be included and vice versa
     Args:
-        excess_green: color index excess green
-        excess_red: color index excess red
+        color_index_diff: color index difference based on green index minus red index
         marker: marker to be updated
 
     Returns:
         nothing
     """
-    diff = excess_green - excess_red
-    debug(diff, 'index diff')
-    marker[diff <= -0.05] = False
+    marker[color_index_diff <= -0.05] = False
 
 
 def texture_filter(image, marker, threshold=220, window=3):

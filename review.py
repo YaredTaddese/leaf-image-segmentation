@@ -176,7 +176,7 @@ def review_excess_diff(file_name):
         original_image = read_image(file_name)
         ret_val = 0
 
-        index = excess_green(original_image) - excess_red(original_image)
+        index = index_diff(original_image)
     except ValueError as err:
         if str(err) == IMAGE_NOT_READ:
             print('Error: Couldnot read image file: ', file_name)
@@ -188,16 +188,18 @@ def review_excess_diff(file_name):
         show_review(original_image, index, 'Excess Diff')
 
 
-def review_index_marker(file_name):
+def review_index_marker(file_name, contrast=False):
     try:
         original_image = read_image(file_name)
         ret_val = 0
 
         marker = np.full((original_image.shape[0], original_image.shape[1]), True)
-        color_index_marker(excess_green(original_image), excess_red(original_image), marker)
+        color_index_marker(index_diff(original_image), marker)
 
         image = original_image.copy()
         image[np.logical_not(marker)] = np.array([0, 0, 0])
+        if contrast:
+            image[marker] = np.array([255, 255, 255])
     except ValueError as err:
         if str(err) == IMAGE_NOT_READ:
             print('Error: Couldnot read image file: ', file_name)
