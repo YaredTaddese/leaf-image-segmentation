@@ -45,6 +45,7 @@ def apply_marker(image, marker, background = 0, inverse = True):
 
     new_image = image.copy()
     new_image[mask] = background
+    new_image[~mask] = 255
 
     return new_image
 
@@ -59,7 +60,7 @@ def segment(image_file, background = 0):
         ret_val:
         segmented_image: in ndarray form
     """
-    image = read_image(image_file)
+    image = read_image(image_file, cv2.IMREAD_GRAYSCALE)
     
     ret_val, marker = get_marker(image)
     segmented_image = apply_marker(image, marker, background)

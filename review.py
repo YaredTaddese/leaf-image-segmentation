@@ -69,7 +69,7 @@ def review_segmentation(file_name):
         else:
             raise
     else:
-        show_review(original_image, segmented_image, 'Otsu Thresholding', ret_val)
+        show_review(original_image, segmented_image, 'Otsu Thresholding', ret_val, gray=True)
 
 
 def review_remove_whites(file_name):
