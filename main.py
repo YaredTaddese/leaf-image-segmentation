@@ -1,12 +1,19 @@
 import os
 import pathlib
+import numpy as np
+import cv2
 
 from utils import *
 from background_marker import *
 
 
-def generate_background_markers(folder):
-    # create a new directory
+def generate_background_markers(folder, intensity=5):
+    # integrate directory name and create a new directory
+    if folder.endswith(os.sep):
+        folder = folder[:-1]
+    if not os.path.isdir(folder):
+        print(folder, ': is not a directory')
+        return
     new_folder = folder + '_markers'
     os.makedirs(new_folder)
 
@@ -19,7 +26,7 @@ def generate_background_markers(folder):
                 color_index_marker(index_diff(original_image), marker)
 
                 image = np.zeros((original_image.shape))
-                image[marker] = np.array([5, 5, 5])
+                image[marker] = np.array([intensity, intensity, intensity])
                 # image[~marker] = np.array([0, 0, 0])
 
                 cv2.imwrite(os.path.join(new_folder, file), image)
