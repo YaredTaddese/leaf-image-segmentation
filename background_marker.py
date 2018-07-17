@@ -126,6 +126,49 @@ def generate_background_marker(file_name):
 
     return 0, marker
 
+
+def select_largest_obj(img_bin, lab_val=255, fill_holes=False,
+                       smooth_boundary=False, kernel_size=15):
+    '''Select the largest object from a binary image and optionally
+    fill holes inside it and smooth its boundary.
+    Args:
+        img_bin (2D array): 2D numpy array of binary image.
+        lab_val ([int]): integer value used for the label of the largest
+                object. Default is 255.
+        fill_holes ([boolean]): whether fill the holes inside the largest
+                object or not. Default is false.
+        smooth_boundary ([boolean]): whether smooth the boundary of the
+                largest object using morphological opening or not. Default
+                is false.
+        kernel_size ([int]): the size of the kernel used for morphological
+                operation. Default is 15.
+    Returns:
+        a binary image as a mask for the largest object.
+    '''
+    n_labels, img_labeled, lab_stats, _ = \
+        cv2.connectedComponentsWithStats(img_bin, connectivity=8, ltype=cv2.CV_32S)
+    largest_obj_lab = np.argmax(lab_stats[1:, 4]) + 1
+    largest_mask = np.zeros(img_bin.shape, dtype=np.uint8)
+    largest_mask[img_labeled == largest_obj_lab] = lab_val
+    # import pdb; pdb.set_trace()
+    if fill_holes:
+        bkg_locs = np.where(img_labeled == 0)
+        bkg_seed = (bkg_locs[0][0], bkg_locs[1][0])
+        img_floodfill = largest_mask.copy()
+        h_, w_ = largest_mask.shape
+        mask_ = np.zeros((h_ + 2, w_ + 2), dtype=np.uint8)
+        cv2.floodFill(img_floodfill, mask_, seedPoint=bkg_seed,
+                      newVal=lab_val)
+        holes_mask = cv2.bitwise_not(img_floodfill)  # mask of the holes.
+        largest_mask = largest_mask + holes_mask
+    if smooth_boundary:
+        kernel_ = np.ones((kernel_size, kernel_size), dtype=np.uint8)
+        largest_mask = cv2.morphologyEx(largest_mask, cv2.MORPH_OPEN,
+                                        kernel_)
+
+    return largest_mask
+
+
 def simple_test():
     # image = read_image(files['jpg1'])
     # g_img = excess_green(image)
