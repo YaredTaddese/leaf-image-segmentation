@@ -152,15 +152,70 @@ def select_largest_obj(img_bin, lab_val=255, fill_holes=False,
     largest_mask[img_labeled == largest_obj_lab] = lab_val
     # import pdb; pdb.set_trace()
     if fill_holes:
-        bkg_locs = np.where(img_labeled == 0)
-        bkg_seed = (bkg_locs[0][0], bkg_locs[1][0])
-        img_floodfill = largest_mask.copy()
-        h_, w_ = largest_mask.shape
-        mask_ = np.zeros((h_ + 2, w_ + 2), dtype=np.uint8)
-        cv2.floodFill(img_floodfill, mask_, seedPoint=bkg_seed,
-                      newVal=lab_val)
-        holes_mask = cv2.bitwise_not(img_floodfill)  # mask of the holes.
-        largest_mask = largest_mask + holes_mask
+        if True:
+            # fill holes using opencv floodfill function
+            bkg_locs = np.where(img_labeled == 0)
+            bkg_seed = (bkg_locs[0][0], bkg_locs[1][0])
+            img_floodfill = largest_mask.copy()
+            h_, w_ = largest_mask.shape
+            mask_ = np.zeros((h_ + 2, w_ + 2), dtype=np.uint8)
+            cv2.floodFill(img_floodfill, mask_, seedPoint=bkg_seed,
+                          newVal=lab_val)
+            holes_mask = cv2.bitwise_not(img_floodfill)  # mask of the holes.
+            largest_mask = largest_mask + holes_mask
+        elif False:
+            # fill holes using closing morphology operation
+            kernel_ = np.ones((50, 50), dtype=np.uint8)
+            largest_mask = cv2.morphologyEx(largest_mask, cv2.MORPH_CLOSE,
+                                            kernel_)
+        else:
+            # fill background-holes based on hole area threshold
+
+            # invert to setup holes of background, sorry for the incovenience
+            inv_img_bin = np.bitwise_not(img_bin)
+            inv_n_labels, inv_img_labeled, inv_lab_stats, _ = \
+                cv2.connectedComponentsWithStats(inv_img_bin, connectivity=8, ltype=cv2.CV_32S)
+
+            # fill background-holes
+            inv_sizes = inv_lab_stats[1:, -1]
+            inv_nb_components = inv_n_labels - 1
+
+            inv_max_side = np.amax(inv_img_labeled.shape)
+            inv_min_size = int(inv_max_side) # todo: specify good min size
+
+            inv_mask = np.zeros((inv_img_labeled.shape), dtype=np.uint8)
+
+            for inv_i in range(0, inv_nb_components):
+                if inv_sizes[inv_i] >= inv_min_size:
+                    inv_mask[inv_img_labeled == inv_i + 1] = 255
+            cv2.imwrite('/home/yehualashet/Pictures/im_inv_bin.jpg', inv_img_bin)
+            cv2.imwrite('/home/yehualashet/Pictures/im_inv_mask1.jpg', inv_mask)
+            largest_mask = largest_mask + np.bitwise_not(inv_mask)
+            cv2.imwrite('/home/yehualashet/Pictures/im_inv_mask2.jpg', largest_mask)
+
+            # fill foreground-holes i.e small areas considered as foreground
+            n_labels, img_labeled, lab_stats, _ = \
+                cv2.connectedComponentsWithStats(largest_mask, connectivity=8, ltype=cv2.CV_32S)
+            largest_obj_lab = np.argmax(lab_stats[1:, 4]) + 1
+            largest_mask = np.zeros(img_bin.shape, dtype=np.uint8)
+            largest_mask[img_labeled == largest_obj_lab] = lab_val
+
+            sizes = lab_stats[1:, -1]
+            nb_components = n_labels - 1
+
+            max_side = np.amax(img_labeled.shape)
+            min_size = int(max_side * max_side) # todo: specify good min size
+
+            mask = np.zeros((img_labeled.shape), dtype=np.uint8)
+
+            for i in range(0, nb_components):
+                if sizes[i] >= min_size:
+                    mask[img_labeled == i + 1] = 255
+            cv2.imwrite('/home/yehualashet/Pictures/im_bin.jpg', img_bin)
+            cv2.imwrite('/home/yehualashet/Pictures/im_mask1.jpg', mask)
+            largest_mask = largest_mask + mask
+            cv2.imwrite('/home/yehualashet/Pictures/im_mask2.jpg', largest_mask)
+
     if smooth_boundary:
         kernel_ = np.ones((kernel_size, kernel_size), dtype=np.uint8)
         largest_mask = cv2.morphologyEx(largest_mask, cv2.MORPH_OPEN,
