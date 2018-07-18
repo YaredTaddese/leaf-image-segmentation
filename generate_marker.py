@@ -34,13 +34,14 @@ if __name__ == '__main__':
     # handle command line arguments
     parser = argparse.ArgumentParser('generate_marker')
     parser.add_argument('-c', '--contrast', action='store_true',
-                        help='The image will be output to differ background and foreground as much as possible')
+                        help='The image will be output as black background and white foreground')
     parser.add_argument('-u', '--unfilled', action='store_true',
                         help='Output unfilled image with holes')
     parser.add_argument('-s', '--smooth', action='store_true',
                         help='Output image with smooth edges')
     parser.add_argument('-d', '--destination',
-                        help='Destination directory for the output image')
+                        help='Destination directory for the output image. '
+                             'If not specified destination directory will be input image directory')
     parser.add_argument('image_file', help='An image filename with its full path')
     args = parser.parse_args()
 
