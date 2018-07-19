@@ -13,21 +13,24 @@ Note : currently we can generate marker for plant leaf image
 
 Use the following command to segment image
 ```
-usage: generate_marker.py [-h] [-c] [-u] [-s] [-d DESTINATION] image_file
+usage: generate_marker [-h] [-c] [-f {no,flood,threshold,morph}] [-s]
+                       [-d DESTINATION]
+                       image_file
 
 positional arguments:
   image_file            An image filename with its full path
 
 optional arguments:
   -h, --help            show this help message and exit
-  -c, --contrast        The image will be output as black background
-                        and white foreground
-  -u, --unfilled        Output unfilled image with holes
+  -c, --contrast        The image will be output as black background and white
+                        foreground
+  -f {no,flood,threshold,morph}, --fill {no,flood,threshold,morph}
+                        Change the hole filling technique
   -s, --smooth          Output image with smooth edges
   -d DESTINATION, --destination DESTINATION
-                        Destination directory for the output image
-                        If not specified destination directory will
-                        be input image directory
+                        Destination directory for the output image. If not
+                        specified destination directory will be input image
+                        directory
 ```
 
 #### Example:
