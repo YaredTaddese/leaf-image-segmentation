@@ -170,9 +170,10 @@ def generate_floodfill_mask(bin_image):
     Returns:
         a mask to backgrounds adjacent to image edge
     """
-    cv2.imwrite('/home/yared/Documents/leaf images/bin.jpg', bin_image)
-    st = time.time()
-    mask = np.full(
+    y_mask = np.full(
+        (bin_image.shape[0], bin_image.shape[1]), fill_value=255, dtype=np.uint8
+    )
+    x_mask = np.full(
         (bin_image.shape[0], bin_image.shape[1]), fill_value=255, dtype=np.uint8
     )
 
@@ -184,44 +185,22 @@ def generate_floodfill_mask(bin_image):
         # max_final_edge = 0
         if len(item_indexes):
             start_edge, final_edge = item_indexes[0], item_indexes[-1]
-            mask[x, start_edge:final_edge] = 0
+            x_mask[x, start_edge:final_edge] = 0
             # if start_edge < min_start_edge:
             #     min_start_edge = start_edge
             # if final_edge > max_final_edge:
             #     max_final_edge = final_edge
 
-    # print('min_start_edge', min_start_edge)
-    # print('max_final_edge', max_final_edge)
     for y in range(0, ys):
         item_indexes = np.where(bin_image[:,y] != 0)[0]
         if len(item_indexes):
             start_edge, final_edge = item_indexes[0], item_indexes[-1]
-            mask[start_edge:final_edge, y] = 0
 
-    # item_indexes = np.where(bin_image != 0)
-    # x_indexes = item_indexes[0]
-    # y_indexes = item_indexes[1]
-    # x_undexes = #np.unique(x_indexes)
-    # y_undexes = #np.unique(y_indexes)
-    #
-    # print('len x_undex', len(x_undexes))
-    # print('len y_undex', len(y_undexes))
-    # for x_index in x_undexes:
-    #     inner_indexes = np.where(x_indexes == x_index)[0]
-    #     start_edge, final_edge = \
-    #         y_indexes[inner_indexes[0]], y_indexes[inner_indexes[-1]]
-    #     mask[x_index, start_edge:final_edge] = 0
-    #
-    # for y_index in y_undexes:
-    #     inner_indexes = np.where(y_indexes == y_index)[0]
-    #     start_edge, final_edge = \
-    #         x_indexes[inner_indexes[0]], x_indexes[inner_indexes[-1]]
-    #     mask[start_edge:final_edge, y_index] = 0
+            y_mask[start_edge:final_edge, y] = 0
+            # mask[:start_edge, y] = 255
+            # mask[final_edge:, y] = 255
 
-
-    ft = time.time()
-    print('Time:', ft - st)
-    return mask
+    return np.logical_or(x_mask, y_mask)
 
 
 def select_largest_obj(img_bin, lab_val=255, fill_mode=FILL['FLOOD'],
