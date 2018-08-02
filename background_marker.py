@@ -135,31 +135,6 @@ def otsu_color_index(excess_green, excess_red):
     return cv2.threshold(excess_green - excess_red, 0, 255,cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
 
-def generate_background_marker(file_name):
-    """
-    Generate background marker based on the paper
-
-    Args:
-        file_name (string): full path of an image file
-
-    Returns:
-        tuple[0]: threshold number when otsu technique is used else 0
-        tuple[1]: background marker
-    """
-    image = read_image(file_name)
-
-    marker = np.full([image.shape[0], image.shape[1]], True)
-
-    index = index_diff(image)
-    color_index_marker(index, marker)
-
-    remove_whites(image, marker)
-    remove_blacks(image, marker)
-    remove_blues(image, marker)
-
-    return 0, marker
-
-
 def generate_floodfill_mask(bin_image):
     """
     Generate a mask to remove backgrounds adjacent to image edge

@@ -5,7 +5,7 @@ import otsu_segmentation as seg
 import background_marker as bgm
 
 files = {
-    "jpg": "testing_files/jpg.jpg",
+    "jpg": "testing_files/apple_healthy_marked.jpg",
     "txt": "testing_files/txt.txt",
 }
 

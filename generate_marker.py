@@ -21,53 +21,39 @@ def generate_background_marker(file):
 
     # check file name validity
     if not os.path.isfile(file):
-        print(file, ': is not a file')
-        return
+        raise ValueError('{}: is not a file'.format(file))
 
-    try:
-        original_image = read_image(file)
+    original_image = read_image(file)
 
-        marker = np.full((original_image.shape[0], original_image.shape[1]), True)
+    marker = np.full((original_image.shape[0], original_image.shape[1]), True)
 
-        # update marker based on vegetation color index technique
-        color_index_marker(index_diff(original_image), marker)
+    # update marker based on vegetation color index technique
+    color_index_marker(index_diff(original_image), marker)
 
-        # update marker to remove blues
-        # remove_blues(original_image, marker)
+    # update marker to remove blues
+    # remove_blues(original_image, marker)
 
-        return original_image, marker
+    return original_image, marker
 
 
-    except ValueError as err:
-        if str(err) == IMAGE_NOT_READ:
-            print('Error: Could not read image file: ', file)
-        elif str(err) == NOT_COLOR_IMAGE:
-            print('Error: Not color image file: ', file)
-        else:
-            raise
+def segment_leaf(image_file, filling_mode, smooth_boundary, contrast):
+    """
+    Segments leaf from an image file
 
+    Args:
+        image_file (string): full path of an image file
+        filling_mode (string {no, flood, threshold, morph}): 
+            how holes should be filled in segmented leaf
+        smooth_boundary (boolean): should leaf boundary smoothed or not
+        contrast (boolean): should output be segmented image or just mask
 
-if __name__ == '__main__':
-    # handle command line arguments
-    parser = argparse.ArgumentParser('generate_marker')
-    parser.add_argument('-c', '--contrast', action='store_true',
-                        help='The image will be output as black background and white foreground')
-    parser.add_argument('-f', '--fill', choices=['no', 'flood', 'threshold', 'morph'],
-                        help='Change the hole filling technique')
-    parser.add_argument('-s', '--smooth', action='store_true',
-                        help='Output image with smooth edges')
-    parser.add_argument('-d', '--destination',
-                        help='Destination directory for the output image. '
-                             'If not specified destination directory will be input image directory')
-    parser.add_argument('image_file', help='An image filename with its full path')
-    args = parser.parse_args()
-    if args.fill is not None:
-        filling_mode = FILL[args.fill.upper()]
-    else:
-        filling_mode = FILL['FLOOD']
-
+    Returns:
+        tuple[0] (ndarray): original image to be segmented
+        tuple[1] (ndarray): A mask to indicate where leaf is in the image
+                            or the segmented image based on contrast value
+    """
     # get background marker and original image
-    original, marker = generate_background_marker(args.image_file)
+    original, marker = generate_background_marker(image_file)
 
     # set up binary image for futher processing
     bin_image = np.zeros((original.shape[0], original.shape[1]))
@@ -75,28 +61,87 @@ if __name__ == '__main__':
     bin_image = bin_image.astype(np.uint8)
 
     # further processing of image, filling holes, smoothing edges
-    smooth = True if args.smooth else False
     largest_mask = \
         select_largest_obj(bin_image, fill_mode=filling_mode, smooth_boundary=smooth)
 
-    if args.contrast:
+    if contrast:
         image = largest_mask
     else:
         # apply marker to original image
         image = original.copy()
         image[largest_mask == 0] = np.array([0, 0, 0])
 
-    # handle destination folder and file
-    filename, ext = os.path.splitext(args.image_file)
-    new_filename = filename + '_marked' + ext
+    return original, image
+
+
+if __name__ == '__main__':
+    # handle command line arguments
+    parser = argparse.ArgumentParser('generate_marker')
+    parser.add_argument('-c', '--contrast', action='store_true',
+                        help='Output image will be as black background and white foreground')
+    parser.add_argument('-f', '--fill', choices=['no', 'flood', 'threshold', 'morph'],
+                        help='Change hole filling technique for holes appearing in segmented output',
+                        default='flood')
+    parser.add_argument('-s', '--smooth', action='store_true',
+                        help='Output image with smooth edges')
+    parser.add_argument('-d', '--destination',
+                        help='Destination directory for output image. '
+                             'If not specified destination directory will be input image directory')
+    parser.add_argument('image_source', help='A path of image filename or folder containing images')
+    
+    # set up command line arguments conveniently
+    args = parser.parse_args()
+    filling_mode = FILL[args.fill.upper()]
+    smooth = True if args.smooth else False
     if args.destination:
         if not os.path.isdir(args.destination):
             print(args.destination, ': is not a directory')
             exit()
-        basename = os.path.basename(new_filename)
-        new_filename = os.path.join(args.destination, basename)
 
-    # write image to file
-    cv2.imwrite(new_filename, image)
-    print('Marker generated for image file: ', args.image_file)
+    # set up files to be segmented and destination place for segmented output
+    if os.path.isdir(args.image_source):
+        files = [entry for entry in os.listdir(args.image_source)
+                 if os.path.isfile(os.path.join(args.image_source, entry))]
+        base_folder = args.image_source
+
+        # set up destination folder for segmented output
+        if args.destination:
+            destination = args.destination
+        else:
+            destination = args.image_source + '_markers'
+            os.makedirs(destination, exist_ok=True)
+    else:
+        folder, file = os.path.split(args.image_source)
+        files = [file]
+        base_folder = folder
+
+        # set up destination folder for segmented output
+        if args.destination:
+            destination = args.destination
+        else:
+            destination = folder
+
+    for file in files:
+        try:
+            # read image and segment leaf
+            original, output_image = \
+                segment_leaf(os.path.join(base_folder, file), filling_mode, smooth, args.contrast)
+
+        except ValueError as err:
+            if str(err) == IMAGE_NOT_READ:
+                print('Error: Could not read image file: ', file)
+            elif str(err) == NOT_COLOR_IMAGE:
+                print('Error: Not color image file: ', file)
+            else:
+                raise
+        # if no error when segmenting write segmented output
+        else:
+            # handle destination folder and fileaname
+            filename, ext = os.path.splitext(file)
+            new_filename = filename + '_marked' + ext
+            new_filename = os.path.join(destination, new_filename)
+
+            # write image to file
+            cv2.imwrite(new_filename, output_image)
+            print('Marker generated for image file: ', file)
 

@@ -4,8 +4,8 @@ from utils import *
 from otsu_segmentation import *
 
 files = {
-    "jpg1": "testing_files/jpg.jpg",
-    "jpg2": "testing_files/jpg2.jpg",
+    "jpg1": "testing_files/apple_healthy.jpg",
+    "jpg2": "testing_files/apple_healthy_marked.jpg",
     "jpg3": "testing_files/jpg3.jpg",
     "jpg4": "testing_files/jpg4.jpg",
     "jpg5": "testing_files/jpg5.jpg",
