@@ -1,5 +1,7 @@
 import os
 import pathlib
+import numpy as np
+import cv2
 
 from utils import *
 from background_marker import *
@@ -13,7 +15,7 @@ def generate_background_markers(folder, intensity=5):
         print(folder, ': is not a directory')
         return
     new_folder = folder + '_markers'
-    os.makedirs(new_folder, exist_ok=True)
+    os.makedirs(new_folder)
 
     for subdir, dirs, files in os.walk(folder):
         for file in files:

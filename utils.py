@@ -119,7 +119,7 @@ def index_diff(image, green_scale=2.0, red_scale=1.4):
     reds = div0(image[:, :, 2], bgr_sum)
 
     green_index = green_scale * greens - (reds + blues)
-    red_index = red_scale * reds - greens
+    red_index = red_scale * reds - (greens)
 
     return green_index - red_index
 
