@@ -36,7 +36,7 @@ optional arguments:
 
 #### Example:
 
-__Command used__: `python3 generate_marker.py -u -s`
+__Command used__: `python3 generate_marker.py 'some file or folder'`
 
 __Input Image__
         
