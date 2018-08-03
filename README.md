@@ -1,17 +1,19 @@
-# leaf-image-segmentation
+# Leaf Image Segmentation
 
-Based on [Automatic Leaf Extraction from Outdoor
+### Objective
+
+- Implement a technique that can segment(extract) leaf from an image containing leaf
+
+### Resources
+
+- Inspired by the paper: [Automatic Leaf Extraction from Outdoor
 Images ](https://arxiv.org/pdf/1709.06437.pdf)
 
-Steps Finished 
-1. Background marker generation
+### Usage
 
+- `python3 generate_marker.py`
 
-
-
-Note : currently we can generate marker for plant leaf image 
-
-Use the following command to segment image
+ __Command structure__
 ```
 usage: generate_marker [-h] [-c] [-f {no,flood,threshold,morph}] [-s]
                        [-d DESTINATION]
@@ -22,9 +24,9 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -c, --contrast        Output image will be as black background and white
+  -c, --contrast        Segmented output image will be as black background and white
                         foreground
-  -f {no,flood,threshold,morph}, --fill {no,flood,threshold,morph}
+  -f {no,flood,threshold,morph}, --fill {no,flood,threshold,morph} (defaulth mode is flood)
                         Change hole filling technique for holes appearing in
                         segmented output
   -s, --smooth          Output image with smooth edges
@@ -34,14 +36,14 @@ optional arguments:
                         directory
 ```
 
-#### Example:
+### Examples:
 
 __Command used__: `python3 generate_marker.py 'some file or folder'`
 
-__Input Image__
+__Input Images__
         
-![alt Healthy Apple Leaf](testing_files/apple_healthy.JPG)
+![alt Healthy Apple Leaf](testing_files/apple_healthy.JPG) ![alt Apple Leaf with Black Rot](testing_files/apple_black_rot.JPG)
 
-__Output Image__
+__Output Images__
 
-![alt Segmented Healthy Apple Leaf](testing_files/apple_healthy_marked.JPG)
+![alt Segmented Healthy Apple Leaf](testing_files/apple_healthy_marked.JPG) ![alt Segmented Apple Leaf with Black Rot](testing_files/apple_black_rot_marked.JPG)
