@@ -62,7 +62,7 @@ def review_marker(file_name):
 def review_segmentation(file_name):
     try:
         original_image = read_image(file_name)        
-        ret_val, segmented_image = segment(file_name)
+        ret_val, segmented_image = segment_with_otsu(file_name)
     except ValueError as err:
         if str(err) == IMAGE_NOT_READ:
             print('Error: Couldnot read image file: ', file_name)

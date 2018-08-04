@@ -49,7 +49,7 @@ def apply_marker(image, marker, background = 0, inverse = True):
 
     return new_image
 
-def segment(image_file, background = 0):
+def segment_with_otsu(image_file, background = 0):
     """
     Segment an image file using otsu thresholding
     Args:
