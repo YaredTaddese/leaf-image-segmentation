@@ -63,10 +63,11 @@ def segment_leaf(image_file, filling_mode, smooth_boundary, marker_intensity):
 
     # further processing of image, filling holes, smoothing edges
     largest_mask = \
-        select_largest_obj(bin_image, fill_mode=filling_mode, smooth_boundary=smooth_boundary)
+        select_largest_obj(bin_image, fill_mode=filling_mode,
+                           smooth_boundary=smooth_boundary)
 
     if marker_intensity > 0:
-        largest_mask[largest_mask == 255] = marker_intensity
+        largest_mask[largest_mask != 0] = marker_intensity
         image = largest_mask
     else:
         # apply marker to original image
