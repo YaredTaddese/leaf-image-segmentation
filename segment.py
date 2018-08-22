@@ -117,6 +117,8 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--destination',
                         help='Destination directory for output image. '
                              'If not specified destination directory will be input image directory')
+    parser.add_argument('-o', '--with_original', action='store_true',
+                        help='Segmented output will be appended horizontally to the original image')
     parser.add_argument('image_source', help='A path of image filename or folder containing images')
     
     # set up command line arguments conveniently
@@ -138,6 +140,8 @@ if __name__ == '__main__':
         if args.destination:
             destination = args.destination
         else:
+            if args.image_source.endswith(os.path.sep):
+                args.image_source = args.image_source[:-1]
             destination = args.image_source + '_markers'
             os.makedirs(destination, exist_ok=True)
     else:
@@ -168,10 +172,20 @@ if __name__ == '__main__':
         else:
             # handle destination folder and fileaname
             filename, ext = os.path.splitext(file)
-            new_filename = filename + '_marked' + ext
+            if args.with_original:
+                new_filename = filename + '_marked_merged' + ext
+            else:
+                new_filename = filename + '_marked' + ext
             new_filename = os.path.join(destination, new_filename)
 
-            # write image to file
-            cv2.imwrite(new_filename, output_image)
+            # change grayscale image to color image format i.e need 3 channels
+            if args.marker_intensity > 0:
+                output_image = cv2.cvtColor(output_image, cv2.COLOR_GRAY2RGB)
+
+            # write the output
+            if args.with_original:
+                cv2.imwrite(new_filename, np.hstack((original,output_image)))
+            else:
+                cv2.imwrite(new_filename, output_image)
             print('Marker generated for image file: ', file)
 
